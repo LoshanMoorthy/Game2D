@@ -10,13 +10,19 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static utils.Constants.PlayerConstant.*;
+import static utils.Constants.Directions.*;
+
 public class GamePanel extends JPanel {
 
     private MouseInputs mouseInputs;
     private float xDelta = 100, yDelta = 100;
     private BufferedImage image;
-    private BufferedImage[] idleAnimation;
+    private BufferedImage[][] animations;
     private int animationTick, animationIndex, animationSpeed = 15;
+    private int playerAction = IDLE;
+    private int playerDirection = -1;
+    private boolean moving = false;
 
     public GamePanel() {
         mouseInputs = new MouseInputs(this);
@@ -31,15 +37,15 @@ public class GamePanel extends JPanel {
     }
 
     private void loadAnimations() {
-        idleAnimation = new BufferedImage[5];
+        animations = new BufferedImage[9][6];
+        for (int i = 0; i < animations.length; i++)
+            for (int j = 0; j < animations[i].length; j++)
+                animations[i][j] = image.getSubimage(j * 64, i * 40, 64, 40);
 
-        for (int i = 0; i < idleAnimation.length; i++)
-            idleAnimation[i] = image.getSubimage(i * 64, 0, 64, 40);
     }
 
     private void importImage() {
         InputStream is = getClass().getResourceAsStream("/player_sprites.png");
-
         try {
             image = ImageIO.read(is);
         } catch (IOException e) {
@@ -60,26 +66,51 @@ public class GamePanel extends JPanel {
         setPreferredSize(size);
     }
 
-    public void changeXDelta(int value) {
-        this.xDelta += value;
+    public void setDirection(int direction) {
+        this.playerDirection = direction;
+        moving = true;
     }
 
-    public void changeYDelta(int value) {
-        this.yDelta += value;
+    public void setMoving(boolean moving) {
+        this.moving = moving;
     }
 
-    public void setRectPos(int x, int y) {
-        this.xDelta = x;
-        this.yDelta = y;
+    private void setAnimation() {
+        if (moving)
+            playerAction = RUNNING;
+        else
+            playerAction = IDLE;
+    }
+
+    private void updatePosition() {
+        if (moving) {
+            switch (playerDirection) {
+                case LEFT:
+                    xDelta -= 5;
+                    break;
+                case UP:
+                    yDelta -= 5;
+                    break;
+                case RIGHT:
+                    xDelta += 5;
+                    break;
+                case DOWN:
+                    yDelta += 5;
+                    break;
+            }
+        }
+    }
+
+    public void updateGame() {
+        updateAnimationTick();
+        setAnimation();
+        updatePosition();
     }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        updateAnimationTick();
-        
-       g.drawImage(idleAnimation[animationIndex], (int) xDelta, (int) yDelta, 128, 80, null);
-
+        g.drawImage(animations[playerAction][animationIndex], (int) xDelta, (int) yDelta, 256, 160, null);
     }
 
     private void updateAnimationTick() {
@@ -87,7 +118,7 @@ public class GamePanel extends JPanel {
         if (animationTick >= animationSpeed) {
             animationTick = 0;
             animationIndex++;
-            if (animationIndex >= idleAnimation.length)
+            if (animationIndex >= GetSpriteAmount(playerAction))
                 animationIndex = 0;
         }
     }

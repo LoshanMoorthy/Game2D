@@ -21,6 +21,7 @@ public class Player extends Entity {
     private BufferedImage[][] animations;
     private boolean left, up, right, down;
     private float playerSpeed = 2.0f;
+    private int[][] levelData;
 
     public Player(float x, float y, int width, int height) {
         super(x, y, width, height);
@@ -96,6 +97,10 @@ public class Player extends Entity {
         for (int i = 0; i < animations.length; i++)
             for (int j = 0; j < animations[i].length; j++)
                 animations[i][j] = image.getSubimage(j * 64, i * 40, 64, 40);
+    }
+
+    public void loadLevelData(int[][] levelData) {
+        this.levelData = levelData;
     }
 
     public void resetDirectionBooleans() {

@@ -19,7 +19,6 @@ public class LoadSave {
         InputStream is = LoadSave.class.getResourceAsStream("/" + fileName);
         try {
             image = ImageIO.read(is);
-
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
